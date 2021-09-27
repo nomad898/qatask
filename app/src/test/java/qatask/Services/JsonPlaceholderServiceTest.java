@@ -1,6 +1,7 @@
 package qatask.Services;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.io.FileNotFoundException;
@@ -57,21 +58,29 @@ public class JsonPlaceholderServiceTest {
         assertThat("JsonPlaceholder API returns expected list", response.headers().get("content-type"), equalTo(JSON_MIME_TYPE));
     }
 
-    @Test
-    public void givenRequest_whenPostsRetrieved_thenExpectedListIsReturned() {
-        List<Post> expectedPosts = new ArrayList<Post>();
-        expectedPosts.add(new Post(
-            1,
-            1,
-            "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
-            "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
-        ));
-        expectedPosts.add(new Post(
-            1,
-            2,
-            "qui est esse",
-            "est rerum tempore vitae\nsequi sint nihil reprehenderit dolor beatae ea dolores neque\nfugiat blanditiis voluptate porro vel nihil molestiae ut reiciendis\nqui aperiam non debitis possimus qui neque nisi nulla"
-        ));
+    @DataProvider
+    public Object[][] expectedPosts() {
+        return new Post[][] {
+            new Post[] { 
+                new Post(
+                    1,
+                    1,
+                    "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+                    "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
+                ),
+                new Post(
+                    1,
+                    2,
+                    "qui est esse",
+                    "est rerum tempore vitae\nsequi sint nihil reprehenderit dolor beatae ea dolores neque\nfugiat blanditiis voluptate porro vel nihil molestiae ut reiciendis\nqui aperiam non debitis possimus qui neque nisi nulla"
+                )
+            }
+        };
+    }
+
+    @Test(dataProvider = "expectedPosts")
+    public void givenRequest_whenPostsRetrieved_thenExpectedListIsReturned(Post[] posts) {
+    	List<Post> expectedPosts = Arrays.asList(posts);
         Call<List<Post>> postsCall = this.service.getPosts();
         Response<List<Post>> response = this.getResponse(postsCall);
         List<Post> actualPosts = response.body();
@@ -79,7 +88,7 @@ public class JsonPlaceholderServiceTest {
         List<Post> filteredPosts = actualPosts.stream().limit(POST_LIMIT).collect(Collectors.toList());
         assertThat("JsonPlaceholder API returns expected list", filteredPosts, equalTo(expectedPosts));
     }
-
+    
     @Test
     public void givenParameterizedSortOrderRequest_whenPostsRetrieved_thenExpectedListIsReturned() {
         List<Post> expectedPosts = new ArrayList<Post>();
@@ -197,8 +206,7 @@ public class JsonPlaceholderServiceTest {
         }
         Posts actual = response.body();
         assertThat("JsonPlaceholder API returns empty list if invalid id is requested", actual, equalTo(emptyList));
-    }
-    
+    }    
 
     private Response<List<Post>> getResponse(Call<List<Post>> postsCall){
         Response<List<Post>> response = null;
